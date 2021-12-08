@@ -3,7 +3,7 @@ import './App.css';
 import * as React from 'react';
 
 const App = () => {
-  const [{ row, col, startRow, startCol, endRow, endCol, tableOn, mergeOn, customTable }, setState] = React.useState({
+  const [{ row, col, startRow, startCol, endRow, endCol, tableOn, mergeOn, customTable, mergeMap }, setState] = React.useState({
     row: 0,
     col: 0,
     startRow: 0,
@@ -12,7 +12,8 @@ const App = () => {
     endCol: 0,
     tableOn: false,
     mergeOn: false,
-    customTable: <></>
+    customTable: <></>,
+    mergeMap: [],
   })
 
   const selectCell = (currTrNum, currTdNum) => {
@@ -33,40 +34,101 @@ const App = () => {
     }
   }
 
-  const renderMergeTableTd = (currTrNum, currTdNum, initBoxTr, initBoxTd, finalBoxTr, finalBoxTd) => {
+  const receiveMergeEl = (currTrNum, currTdNum, initBoxTr, initBoxTd, finalBoxTr, finalBoxTd) => {
     if(currTrNum === initBoxTr && currTdNum === initBoxTd) {
-      return <td rowSpan={1 + finalBoxTr - initBoxTr} colSpan={1 + finalBoxTd - initBoxTd}/>
+      return 0
     } else if ((currTrNum >= initBoxTr && currTrNum <= finalBoxTr) && (currTdNum >= initBoxTd && currTdNum <= finalBoxTd)) {
-      return null;
+      return 0;
     } else {
-      return <td />
+      return 1
     }
   }
 
+  const recieveMergeMap = () => {
+    return mergeMap.map((e, idx) => {
+      return e.map((E, IDX) => {
+        const initBoxTr = startRow > endRow ? endRow : startRow;
+        const initBoxTd = startCol > endCol ? endCol : startCol;
+        const finalBoxTr = initBoxTr === startRow ? endRow : startRow;
+        const finalBoxTd = initBoxTd === startCol ? endCol : startCol;
+        return E === 0 ? 0 : receiveMergeEl(idx + 1, IDX + 1, initBoxTr, initBoxTd, finalBoxTr, finalBoxTd);
+      })
+    })
+  }
+
+  // const renderMergeTableTd = (currTrNum, currTdNum, initBoxTr, initBoxTd, finalBoxTr, finalBoxTd) => {
+  //   if(currTrNum === initBoxTr && currTdNum === initBoxTd) {
+  //     return <td rowSpan={1 + finalBoxTr - initBoxTr} colSpan={1 + finalBoxTd - initBoxTd}/>
+  //   } else if ((currTrNum >= initBoxTr && currTrNum <= finalBoxTr) && (currTdNum >= initBoxTd && currTdNum <= finalBoxTd)) {
+  //     return null;
+  //   } else {
+  //     return <td />
+  //   }
+  // }
+
+  const returnMergeTable = () => {
+    return <tbody>
+      {mergeMap.map((e, idx) => {
+        return <tr key={idx}>
+          {e.map((E, IDX) => {
+            const cln = E === 1 ? 'active' : 'deactive'
+            return !idx 
+                    ? <th 
+                        className={`${cln} head`} 
+                        key={IDX}
+                        style={{
+                          background: `${idx + 1}${IDX + 1}` === `${startRow}${startCol}` || `${idx + 1}${IDX + 1}` === `${endRow}${endCol}` ? 'black' : 'transparent'
+                        }}
+                        onClick={() => {selectCell(idx + 1, IDX + 1)}}>
+                          HEAD
+                      </th> 
+                    : <td 
+                        className={`${cln} content`}
+                        key={IDX}
+                        style={{
+                          background: `${idx + 1}${IDX + 1}` === `${startRow}${startCol}` || `${idx + 1}${IDX + 1}` === `${endRow}${endCol}` ? 'black' : 'transparent'
+                        }}
+                        onClick={() => {selectCell(idx + 1, IDX + 1)}}
+                        />
+            // const initBoxTr = startRow > endRow ? endRow : startRow;
+            // const initBoxTd = startCol > endCol ? endCol : startCol;
+            // const finalBoxTr = initBoxTr === startRow ? endRow : startRow;
+            // const finalBoxTd = initBoxTd === startCol ? endCol : startCol;
+            // return renderMergeTableTd(idx + 1, IDX + 1, initBoxTr, initBoxTd, finalBoxTr, finalBoxTd);
+          })}
+        </tr>
+      })}
+    </tbody>
+  }
+
   const readyTable = () => {
+
     return (
         <tbody>
           {Array.from(Array(row)).map((e, idx)=>{
             return (
-            <tr key={idx}>
+            <tr key={idx} className={!idx ? 'head' : 'content'}>
               {Array.from(Array(col)).map((E, IDX)=>{
-                if(startRow * startCol * endRow * endCol !== 0 && mergeOn) {
-                  const initBoxTr = startRow > endRow ? endRow : startRow;
-                  const initBoxTd = startCol > endCol ? endCol : startCol;
-                  const finalBoxTr = initBoxTr === startRow ? endRow : startRow;
-                  const finalBoxTd = initBoxTd === startCol ? endCol : startCol;
-                  return renderMergeTableTd(idx + 1, IDX + 1, initBoxTr, initBoxTd, finalBoxTr, finalBoxTd);
-                } else {
+                  if(!idx) {
+                    return (
+                      <th
+                        key={IDX}
+                        style={{
+                          background: `${idx + 1}${IDX + 1}` === `${startRow}${startCol}` || `${idx + 1}${IDX + 1}` === `${endRow}${endCol}` ? 'black' : 'transparent'
+                        }}
+                        onClick={() => {selectCell(idx + 1, IDX + 1)}}>
+                          HEAD
+                      </th>
+                    )
+                  }
                   return (
                     <td 
                       key={IDX}
                       style={{
-                        cursor: 'pointer',
                         background: `${idx + 1}${IDX + 1}` === `${startRow}${startCol}` || `${idx + 1}${IDX + 1}` === `${endRow}${endCol}` ? 'black' : 'transparent'
                       }}
                       onClick={() => {selectCell(idx + 1, IDX + 1)}}>
                     </td>);
-                }
                 })}
             </tr>)})}
         </tbody>
@@ -83,7 +145,10 @@ const App = () => {
         tableOn: true,
         mergeOn: false,
         // tdString: Array.from(Array(row*col)),
-        customTable: readyTable()
+        customTable: readyTable(),
+        mergeMap: Array.from(Array(row)).map(e => {
+          return Array.from(Array(col).fill(1));
+        })
       }));
   }
 
@@ -96,13 +161,22 @@ const App = () => {
       endCol: 0,
       tableOn: true,
       mergeOn: false,
+      mergeMap: Array.from(Array(row)).map(e => {
+        return Array.from(Array(col).fill(1));
+      })
     }));
   }
 
   const mergeTable = () => {
     setState((p)=>({
       ...p,
+      startRow: 0,
+      startCol: 0,
+      endRow: 0,
+      endCol: 0,
       mergeOn: true,
+      customTable: returnMergeTable(),
+      mergeMap: recieveMergeMap()
     }));
   }
   
@@ -127,11 +201,13 @@ const App = () => {
       <br/>
       <br/>
       <table>
-          {/* {tableOn && readyTable()} */}
-          {customTable}
+          {tableOn && !mergeOn ? readyTable() : null}
+      </table>
+      <table>
+        {mergeOn && returnMergeTable()}
       </table>
       <br/>
-      {startRow * startCol * endRow * endCol !== 0 
+      {(startRow * startCol * endRow * endCol !== 0 || mergeOn)
         ? <React.Fragment>
             <button onClick={resetTable}>재선택</button> 
             &nbsp;

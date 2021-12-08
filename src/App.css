@@ -11,8 +11,36 @@
   height: 50px;
   border: 1px solid red;
 } */
-td {
+
+.head {
+  position: sticky;
+  top: 0px;
+}
+
+table {
+  border-spacing: 0px;
   border: 1px solid black;
+  /* border-top: 1px solid black;
+  border-left: 1px solid black; */
+}
+
+th {
+  cursor: pointer;
+  border: 1px solid black;
+  /* border-right: 1px solid black;
+  border-bottom: 1px solid black; */
   width: 80px;
   height: 50px;
+}
+td {
+  cursor: pointer;
+  border: 1px solid black;
+  /* border-right: 1px solid black;
+  border-bottom: 1px solid black; */
+  width: 80px;
+  height: 50px;
+}
+
+.deactive {
+  border: none !important;
 }
